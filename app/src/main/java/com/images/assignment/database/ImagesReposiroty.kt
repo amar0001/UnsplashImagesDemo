@@ -1,23 +1,38 @@
 package com.images.assignment.database
 
 import com.images.assignment.MyApplication
+import com.images.assignment.data.UnsplashImageResponse
 import javax.inject.Inject
 
 class ImagesRepository @Inject constructor(
-
     private val imageDao: ImageDao
 ) {
 
-     fun saveImageToDb(image: ImageEntity) {
-       imageDao.insertAllImages(image)
+
+
+
+    suspend fun getImagesFromDatabase(page: Int, pageSize: Int): List<ImageEntity> {
+        val offset = (page - 1) * pageSize
+        return imageDao.getImages(offset, pageSize)
     }
 
-     fun saveImagesToDb(images: List<ImageEntity>) {
-       imageDao.insertAllImages(*images.toTypedArray())
+    suspend fun insertImages(images: List<ImageEntity>) {
+        imageDao.insertAll(images)
     }
 
-     fun getImageFromDb(id: Long): ImageEntity {
-        return imageDao.getImageById(id)
+    suspend fun getStoredImageIds(): List<String> {
+        // Retrieve all image IDs from the database
+        return imageDao.getAllImageIds()
+    }
+
+    suspend fun checkImagesInDatabase(images: List<UnsplashImageResponse>): List<UnsplashImageResponse> {
+        // Get IDs of stored images
+        val storedImageIds = getStoredImageIds()
+
+        // Filter fetched images to find those not in the database
+        return images.filter {
+            it.id !in storedImageIds
+        }
     }
 }
 

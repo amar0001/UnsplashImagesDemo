@@ -7,5 +7,5 @@ data class UnsplashImageResponse(
 )
 
 data class ImageUrls(
-    val regular: String
+    val thumb: String
 )

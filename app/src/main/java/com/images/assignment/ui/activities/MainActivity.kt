@@ -34,9 +34,12 @@ class MainActivity : ComponentActivity() {
                 ) {
                     NetworkChecker({
                         ImagesGrid(viewModel = viewModel)
+
                     }, {
 
-                    })
+                        Text(text = "No Internet Connection")
+                    }, false)
+
 
                 }
             }

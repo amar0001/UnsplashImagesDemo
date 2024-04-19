@@ -1,7 +1,9 @@
 package com.images.assignment.utils
 
+import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.AlertDialog
@@ -17,14 +19,44 @@ fun NetworkChecker(connected: @Composable () -> Unit, notConnected: @Composable 
 
 @Composable
 fun NetworkChecker(
-    connected: @Composable () -> Unit,
+    connected: @Composable  () -> Unit,
     notConnected: @Composable () -> Unit,
     showDialog: Boolean
 ) {
     val context = LocalContext.current
-    var openDialog by remember { mutableStateOf(false) }
 
-    val coroutineScope = rememberCoroutineScope()
+    var _showDialog by remember { mutableStateOf(showDialog) }
+    var offlineLoad by remember { mutableStateOf(false) }
+
+    val connectedToInternet = checkInternet(context)
+
+    if (!connectedToInternet.value && showDialog) {
+
+
+        if(_showDialog) {
+            AlertDialog(onDismissRequest = {
+                _showDialog = false
+            }, title = { Text("No Internet Connection") }, text = {
+                Text("Please connect to the internet and try again.")
+            }, confirmButton = {
+                Button(onClick = {
+                    _showDialog = false
+
+                }) {
+                    Text("OK")
+                }
+            })
+            notConnected()
+        }
+    } else {
+        connected() // Here you can call your API
+    }
+
+
+}
+
+@Composable
+ public fun checkInternet(context: Context): State<Boolean> {
     val connectivityManager = remember {
         context.getSystemService(ConnectivityManager::class.java)
     }
@@ -42,18 +74,15 @@ fun NetworkChecker(
             wifiLazy || mobileDataLazy
         }
     }
+    return connectedToInternet
+}
 
-    if (!connectedToInternet.value && showDialog) {
-        AlertDialog(onDismissRequest = {}, title = { Text("No Internet Connection") }, text = {
-            Text("Please connect to the internet and try again.")
-        }, confirmButton = {
-            Button(onClick = { /*TODO*/ }) {
-                Text("Retry")
-            }
-        })
 
-        notConnected()
-    } else {
-        connected() // Here you can call your API
-    }
+fun isInternetAvailable(context: Context): Boolean {
+    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    val network = connectivityManager.activeNetwork ?: return false
+    val networkCapabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+    return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
 }

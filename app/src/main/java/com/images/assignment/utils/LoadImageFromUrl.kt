@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.asImageBitmap
 import com.images.assignment.data.UnsplashImageResponse
+import com.images.assignment.database.ImageEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -13,12 +14,12 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 @Composable
-fun LoadImageFromUrl(item: UnsplashImageResponse) {
-    val url = item.urls
+fun LoadImageFromUrl(item: ImageEntity) {
+    val url = item.url
     var bitmap by remember(url) { mutableStateOf<Bitmap?>(null) }
 
     LaunchedEffect(url) {
-        val loadedBitmap = loadImageFromUrl(url.regular)
+        val loadedBitmap = loadImageFromUrl(url)
         bitmap = loadedBitmap
     }
 
