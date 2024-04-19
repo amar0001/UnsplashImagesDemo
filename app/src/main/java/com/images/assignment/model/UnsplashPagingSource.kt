@@ -9,6 +9,8 @@ import com.images.assignment.database.ImageEntity
 import com.images.assignment.database.ImagesRepository
 import com.images.assignment.http.Repository
 import com.images.assignment.utils.NetworkChecker
+import com.images.assignment.utils.getBase64FromImageUrl
+import com.images.assignment.utils.getUrlBytes
 import com.images.assignment.utils.isInternetAvailable
 import com.images.assignment.utils.showToast
 import com.images.assignment.utils.toast
@@ -33,10 +35,7 @@ class UnsplashPagingSource @Inject constructor(
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ImageEntity> {
         val page = params.key ?: 1
-        //  Check if data exists in the database
-        val dataExistsInDb = false//imagesRepository.isDataInDatabase()
 
-        // Fetch data from the API
         val resultList = getData(page, params)
 
         try {
@@ -59,44 +58,6 @@ class UnsplashPagingSource @Inject constructor(
             // Return HTTP error
             return LoadResult.Error(e)
         }
-
-//        val result: LoadResult<Int, ImageEntity> = if (dataExistsInDb) {
-//            // Fetch data from the database
-//            val response = imagesRepository.getImagesFromDatabase(page, params.loadSize)
-//            LoadResult.Page(
-//                data = response,
-//                prevKey = if (page == 1) null else page - 1,
-//                nextKey = if (response.isEmpty()) null else page + 1
-//            )
-//        } else {
-//            // Fetch data from the API
-//            val resultList = repository.getImagesData(page, params.loadSize)
-//            try {
-//                val response = convertToImageEntities(resultList)
-//                if (resultList.isNotEmpty()) {
-//                    // Insert fetched data into the database
-//                    imagesRepository.insertImages(response)
-//                    // Return the fetched data
-//                    LoadResult.Page(
-//                        data = response,
-//                        prevKey = if (page == 1) null else page - 1,
-//                        nextKey = if (response.isEmpty()) null else page + 1
-//                    )
-//                } else {
-//                    // If the result list is empty, return error
-//                    LoadResult.Error(Exception())
-//                }
-//            } catch (e: IOException) {
-//                // Return IO error
-//                LoadResult.Error(e)
-//            } catch (e: HttpException) {
-//                // Return HTTP error
-//                LoadResult.Error(e)
-//            }
-//        }
-
-        //  return result
-
 
     }
 
@@ -127,12 +88,12 @@ class UnsplashPagingSource @Inject constructor(
         return imagesRepository.getImagesFromDatabase(page, params.loadSize)
     }
 
-    fun convertToImageEntities(responseList: List<UnsplashImageResponse>): List<ImageEntity> {
+    private suspend fun convertToImageEntities(responseList: List<UnsplashImageResponse>): List<ImageEntity> {
         return responseList.map { response ->
             ImageEntity(
                 imageID = response.id,
-                url = response.urls.thumb,
-                imageBlob = null
+                url = response.urls.regular,
+                imageBlob = getBase64FromImageUrl(response.urls.regular)
             )
         }
     }

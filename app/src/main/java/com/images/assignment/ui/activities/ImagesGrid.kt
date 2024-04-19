@@ -13,12 +13,20 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.images.assignment.components.CenteredText
 import com.images.assignment.model.MainViewModel
+import com.images.assignment.utils.ImageFromBase64String
 import com.images.assignment.utils.LoadImageFromUrl
 
 @Composable
 fun ImagesGrid(viewModel: MainViewModel) {
 
     val response = viewModel.imagesState.collectAsLazyPagingItems()
+
+    if(response.itemCount == 0)
+    {
+        CenteredText(text = "No data found.")
+        return
+    }
+
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(2),
         modifier = Modifier.fillMaxSize()
@@ -26,7 +34,10 @@ fun ImagesGrid(viewModel: MainViewModel) {
 
         items(response.itemCount) { i ->
             val item = response[i]
-            item?.let { LoadImageFromUrl(it) }
+            item?.let {
+            /*LoadImageFromUrl(it)*/
+                it.imageBlob?.let { it1 -> ImageFromBase64String(it1) }
+            }
         }
 
         response.apply {
@@ -45,8 +56,10 @@ fun ImagesGrid(viewModel: MainViewModel) {
                 }
 
                 loadState.refresh is LoadState.Error || loadState.append is LoadState.Error -> {
+
+
                     item {
-                        CenteredText("No image found.")
+                        //CenteredText("No image found.")
                     }
                 }
 
@@ -55,37 +68,5 @@ fun ImagesGrid(viewModel: MainViewModel) {
             }
         }
     }
-
-
-//    when (unsplashImageState) {
-//        is UnsplashImageState.Error ->
-//        {
-//            Text(
-//                text = "Failed to images data.",
-//                fontSize = 18.sp,
-//                color = Color.Red
-//            )
-//        }
-//        is UnsplashImageState.Loading -> {
-//            CircularProgressIndicator()
-//        }
-//        is UnsplashImageState.Success -> {
-//            val images = (unsplashImageState as UnsplashImageState.Success).list
-//
-//            LazyVerticalGrid(
-//                columns = GridCells.Fixed(2),
-//                modifier = Modifier
-//                    .padding(1.dp)
-//                    .fillMaxWidth()
-//            ) {
-//                items(images.size) { i ->
-//                    val item = images[i]
-//                    LoadImageFromUrl(item)
-//                }
-//            }
-//        }
-//    }
-
-
 }
 

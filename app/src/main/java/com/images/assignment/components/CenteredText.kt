@@ -21,8 +21,8 @@ fun CenteredText(text: String) {
             text = text,
             style = TextStyle(
                 color = Color.Black,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal
             )
         )
     }
